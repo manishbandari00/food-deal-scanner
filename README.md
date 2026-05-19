@@ -79,7 +79,7 @@ All 3 tools read the **same `live_data.json`** — so the terminal and browser a
 
 ### 1. Clone the repo
 ```bash
-git clone https://github.com/YOUR_USERNAME/food-deal-scanner.git
+git clone https://github.com/manishbandari00/food-deal-scanner.git
 cd food-deal-scanner
 ```
 
