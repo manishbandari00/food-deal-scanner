@@ -10,7 +10,8 @@ Built as a real-world Python learning project. No frameworks, no cloud — just 
 
 > Terminal scanner with rich UI — best match panel, full bill breakdown, all-items comparison table
 
-*(Add screenshots here after running the project)*
+![Scanner Output](Github_screenshot-1.jpg)
+![Comparison Table](Github_screenshot-2.jpg)
 
 ---
 
