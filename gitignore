@@ -1,0 +1,14 @@
+# Auto-generated live data — don't push this
+live_data.json
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# VS Code settings
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
