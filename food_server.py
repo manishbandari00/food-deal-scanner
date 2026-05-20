@@ -10,7 +10,7 @@ SETUP:
 1. Run data_engine.py first (Terminal 1)
 2. Run this file (Terminal 2) 
 3. Run deal_scanner.py (Terminal 3)
-4. Open browser artifact
+4. Open Chrome → http://localhost:8765
 
 No extra installs needed — uses Python built-in http.server!
 """
