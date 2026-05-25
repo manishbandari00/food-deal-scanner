@@ -238,9 +238,10 @@ def ask_veg_preference(cuisine, restaurants, qty=1):
 
 
 def find_cheapest_item(restaurant, cuisine, veg_pref="any"):
-    """Find cheapest matching item — filters by veg/non-veg preference"""
+    """Find best item by lowest grand total after coupon — not just cheapest price"""
     keywords  = CUISINE_KEYWORDS.get(cuisine, [cuisine.lower()])
-    best_item = None
+    best_item       = None
+    best_grand_total = None
 
     item_name_only      = cuisine == "🍝 Pasta"
     kebab_exclude_pizza = cuisine == "🔥 Kebabs & Tikka"
@@ -264,9 +265,15 @@ def find_cheapest_item(restaurant, cuisine, veg_pref="any"):
                 continue
             if veg_pref == "non-veg" and item_is_veg:
                 continue
-            # ────────────────────────────────────────
-            if best_item is None or item["price"] < best_item["price"]:
-                best_item = item
+            # ── Pick by lowest grand total after coupon ──
+            coupon     = best_coupon_for(restaurant, item["price"])
+            discount   = coupon["max_discount"] if coupon else 0
+            bill       = calc_bill(item["price"], discount)
+            grand_total = bill["grand_total"]
+
+            if best_item is None or grand_total < best_grand_total:
+                best_item        = item
+                best_grand_total = grand_total
 
     return best_item
 
