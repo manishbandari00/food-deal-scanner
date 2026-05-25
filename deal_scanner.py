@@ -238,10 +238,9 @@ def ask_veg_preference(cuisine, restaurants, qty=1):
 
 
 def find_cheapest_item(restaurant, cuisine, veg_pref="any"):
-    """Find best item by lowest grand total after coupon — not just cheapest price"""
+    """Find cheapest matching item — filters by veg/non-veg preference"""
     keywords  = CUISINE_KEYWORDS.get(cuisine, [cuisine.lower()])
-    best_item       = None
-    best_grand_total = None
+    best_item = None
 
     item_name_only      = cuisine == "🍝 Pasta"
     kebab_exclude_pizza = cuisine == "🔥 Kebabs & Tikka"
@@ -265,15 +264,9 @@ def find_cheapest_item(restaurant, cuisine, veg_pref="any"):
                 continue
             if veg_pref == "non-veg" and item_is_veg:
                 continue
-            # ── Pick by lowest grand total after coupon ──
-            coupon     = best_coupon_for(restaurant, item["price"])
-            discount   = coupon["max_discount"] if coupon else 0
-            bill       = calc_bill(item["price"], discount)
-            grand_total = bill["grand_total"]
-
-            if best_item is None or grand_total < best_grand_total:
-                best_item        = item
-                best_grand_total = grand_total
+            # ────────────────────────────────────────
+            if best_item is None or item["price"] < best_item["price"]:
+                best_item = item
 
     return best_item
 
@@ -469,8 +462,9 @@ def run_quantity_scan():
         ))
 
     # ── Step 3: Split order (if needed) ───────────
+    split_total = None
     if len(cuisine_list) > 1:
-        show_split_order(partial_results, budget, cuisine_qtys)
+        split_total = show_split_order(partial_results, budget, cuisine_qtys)
 
     # Notification
     if single_results:
@@ -478,6 +472,11 @@ def run_quantity_scan():
         notify_desktop(
             f"🔥 Best deal: {best['restaurant']}",
             f"₹{best['bill']['grand_total']} for your order! Save ₹{best['discount']}"
+        )
+    elif split_total is not None:
+        notify_desktop(
+            f"🔀 Split Order Found!",
+            f"Combined total: ₹{split_total} across {len(cuisine_list)} restaurants"
         )
 
 
@@ -679,6 +678,7 @@ def show_split_order(partial_results, budget, cuisine_qtys):
         f"   {'[green]✅ Within budget![/green]' if fits else f'[red]⚠ Over budget by ₹{split_total - budget}[/red]'}",
         border_style="green" if fits else "red"
     ))
+    return split_total
 
 
 # ══════════════════════════════════════════════════
