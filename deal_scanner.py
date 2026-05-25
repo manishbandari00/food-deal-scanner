@@ -238,9 +238,10 @@ def ask_veg_preference(cuisine, restaurants, qty=1):
 
 
 def find_cheapest_item(restaurant, cuisine, veg_pref="any"):
-    """Find cheapest matching item — filters by veg/non-veg preference"""
+    """Find best item by lowest grand total after coupon — not just cheapest price"""
     keywords  = CUISINE_KEYWORDS.get(cuisine, [cuisine.lower()])
-    best_item = None
+    best_item        = None
+    best_grand_total = None
 
     item_name_only      = cuisine == "🍝 Pasta"
     kebab_exclude_pizza = cuisine == "🔥 Kebabs & Tikka"
@@ -264,9 +265,15 @@ def find_cheapest_item(restaurant, cuisine, veg_pref="any"):
                 continue
             if veg_pref == "non-veg" and item_is_veg:
                 continue
-            # ────────────────────────────────────────
-            if best_item is None or item["price"] < best_item["price"]:
-                best_item = item
+            # ── Pick by lowest grand total after coupon ──
+            coupon      = best_coupon_for(restaurant, item["price"])
+            discount    = coupon["max_discount"] if coupon else 0
+            bill        = calc_bill(item["price"], discount)
+            grand_total = bill["grand_total"]
+
+            if best_item is None or grand_total < best_grand_total:
+                best_item        = item
+                best_grand_total = grand_total
 
     return best_item
 
@@ -628,9 +635,15 @@ def show_split_order(partial_results, budget, cuisine_qtys):
     ))
 
     for cuisine in cuisine_list:
-        options = sorted(partial_results[cuisine], key=lambda x: (0 if x["is_open"] else 1, x["subtotal"]))
-        best    = options[0]
-        coupon  = best_coupon_for(best["restaurant_obj"], best["subtotal"])
+        def sort_key(x):
+            c = best_coupon_for(x["restaurant_obj"], x["subtotal"])
+            d = c["max_discount"] if c else 0
+            b = calc_bill(x["subtotal"], d)
+            return (0 if x["is_open"] else 1, b["grand_total"])
+
+        options  = sorted(partial_results[cuisine], key=sort_key)
+        best     = options[0]
+        coupon   = best_coupon_for(best["restaurant_obj"], best["subtotal"])
         discount = coupon["max_discount"] if coupon else 0
         bill     = calc_bill(best["subtotal"], discount)
 
